@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+        <title>Insert title here</title>
+        <script language = "javascript">
+            function check_form(form){
+                if (!write_form.name.value) {
+                    alert('이름을 입력하세요.');
+                    write_form.name.focus();
+                    return;
+                }
+                
+                if (!write_form.passwd.value) {
+                    alert('패스워드를 입력하세요.');
+                    write_form.passwd.focus();
+                    return;
+                }
+                
+                if (!write_form.subject.value) {
+                    alert('글 제목을 입력하세요.');
+                    write_form.subject.focus();
+                    return;
+                }
+                
+                if (!write_form.content.value) {
+                    alert('글 내용을 입력하세요.');
+                    write_form.content.focus();
+                    return;
+                }   
+                write_form.submit();
+            }
+        </script>
+    </head>
+	<?
+		if(!$mode){
+		$mode = "form";
+		}
+		
+		if(!strcmp($mode,"form")){
+		?>
+    <body>
+    	
+        <form name = "write_form" method = "post" action = "./write.html?mode=post">
+            <table width = "750" border = "1" cellspacing = "0" cellpadding = "0">
+                <tr>
+                    <td width = "100">
+                        이름
+                    </td>
+                    <td width = "650">
+                        <input type = "text" name = "name" size = "20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        패스워드
+                    </td>
+                    <td>
+                        <input type = "password" name = "passwd" size = "20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        글 제목
+                    </td>
+                    <td>
+                        <input type = "text" name = "subject" size = "90">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        글 내용
+                    </td>
+                    <td>
+                        HTML TAG <input type = "checkbox" name = "html_tag">
+                        <br>
+                        <textarea name = "content" cols = "88" rows = "10">
+                        </textarea>
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table width = "750" border = "0" cellspacing = "0" cellpadding = "0">
+                <tr>
+                    <td align = "center">
+                        <input type = "button" onclick ="check_form();" value = "입력 확인"><input type = "button" onclick ="form.reset();" value = "다시 쓰기">
+                    </td>
+                </tr>
+            </table>
+        </form>		
+    </body>
+	<?
+		} else if(!strcmp($mode, "post")){ 
+			include "./connect_sql.php";
+			$table_name = "board_free";
+			
+			$query = "select max(comment) from $table_name";
+			$result = mysql_query($query, $dbconn);
+			$row = mysql_fetch_row($result);
+			
+			if($row[0]){
+				$comment = $row[0] + 1;}
+			else{
+				$comment = 1;
+			}
+			
+			$title = addslashes($title);
+			$content = addslashes($content);
+			$register_date = time();
+				
+			
+			$query = "insert into $table_name  (name, passwd,title,content,html_tag,register_date,comment) values ('$name', password('$passwd'), '$title', '$content','$html_tag', '$register_date','$comment')";
+			$result = mysql_query($query, $dbconn);
+			?>
+			<script language = "javascript"> 
+    document.location.href = './board.php';
+  	</script>  
+		<?
+		}
+		?>
+	
+</html>

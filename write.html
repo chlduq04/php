@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Insert title here</title>
+        <script language = "javascript">
+            function check_form(form){
+                if (!write_form.name.value) {
+                    alert('이름을 입력하세요.');
+                    write_form.name.focus();
+                    return;
+                }
+                
+                if (!write_form.subject.value) {
+                    alert('글 제목을 입력하세요.');
+                    write_form.subject.focus();
+                    return;
+                }
+                
+                if (!write_form.content.value) {
+                    alert('글 내용을 입력하세요.');
+                    write_form.content.focus();
+                    return;
+                }
+                write_form.submit();
+            }
+            
+            function check_form_modify(form){
+                if (!write_form_modify.name.value) {
+                    alert('이름을 입력하세요.');
+                    write_form.name.focus();
+                    return;
+                }
+                
+                if (!write_form_modify.subject.value) {
+                    alert('글 제목을 입력하세요.');
+                    write_form.subject.focus();
+                    return;
+                }
+                
+                if (!write_form_modify.content.value) {
+                    alert('글 내용을 입력하세요.');
+                    write_form.content.focus();
+                    return;
+                }
+                write_form_modify.submit();
+            }
+        </script>
+    </head>
+    <?
+		$mode = $_GET['mode'];
+		if(!$mode){
+		$mode = "form";		
+		}
+		if($mode=="form"){
+		?>
+    <body>
+        <form name = "write_form" method = "post" action = "./write.html?&mode=post">
+            <table width = "750" border = "1" cellspacing = "0" cellpadding = "0">
+                <tr>
+                    <td width = "100">
+                        이름
+                    </td>
+                    <td width = "650">
+                        <input type = "text" name = "name" size = "20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        글 제목
+                    </td>
+                    <td>
+                        <input type = "text" name = "subject" size = "90">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        글 내용
+                    </td>
+                    <td>
+                        
+                        <br>
+                        <textarea name = "content" cols = "88" rows = "10">
+                        </textarea>
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table width = "750" border = "0" cellspacing = "0" cellpadding = "0">
+                <tr>
+                    <td align = "center">
+                        <input type = "button" onclick ="check_form();" value = "입력 확인"><input type = "button" onclick ="form.reset();" value = "다시 쓰기">
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </body>
+    <?
+		} else if($mode=="post"){ 
+			$name = $_POST['name'];
+			$title = $_POST['subject'];
+			$content = $_POST['content'];
+				
+			include "./setup.php";
+			$query = "select max(comment) from $table_name";
+			$result = mysql_query($query, $dbconn);
+			$row = mysql_fetch_row($result);
+			if($row[0]){
+				$comment = $row[0] + 1;}
+			else{
+				$comment = 1;
+			}
+			
+			$title = addslashes($title);
+			$content = addslashes($content);
+			$register_date = time();
+			$hit = 0;
+			$query = "insert into $table_name (name, title,content,hit,register_date,comment) values ('".$name."','".$title ."','" .$content."','" .$hit ."','".$register_date ."','".$comment."')";
+			$result = mysql_query($query, $dbconn);
+			
+			?>
+    <script language = "javascript">
+        document.location.href = './board.php';
+    </script>
+    <?
+		}else if($mode=="modify"){
+			$id = $_GET['modify_id'];
+			include "./setup.php";
+			$query = "select name,title,content from $table_name where board_id=".$id;
+			$result = mysql_query($query, $dbconn);
+			$name = mysql_result($result, 0, 0);
+			$title = mysql_result($result, 0, 1);
+			$content = mysql_result($result, 0, 2);
+		?>
+    <body>
+        <form name = "write_form_modify" method = "post" action = "./write.html?&mode=update&modify_id=<?echo("$id");?>
+
+            ">
+
+            <table width = "750" border = "1" cellspacing = "0" cellpadding = "0">
+                <tr>
+                    <td width = "100">
+                        이름
+                    </td>
+                    <td width = "650">
+                        <input type = "text" readonly="readonly" name = "name" size = "20" value="<?echo($name);?>">
+                        </input>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        글 제목
+                    </td>
+                    <td>
+                        <input type = "text" name = "subject" size = "90" value="<?echo($title);?>">
+                        </input>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        글 내용
+                    </td>
+                    <td>
+                        
+                        <br>
+                        <textarea name = "content" cols = "88" rows = "10">
+                            <?echo($content);?>
+                        </textarea>
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table width = "750" border = "0" cellspacing = "0" cellpadding = "0">
+                <tr>
+                    <td align = "center">
+                        <input type = "button" onclick ="check_form_modify();" value = "입력 확인"><input type = "button" onclick ="form.reset();" value = "다시 쓰기">
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </body>
+    <?
+		}
+		else if($mode==update){
+			$id = $_GET['modify_id'];
+			$title = $_POST['subject'];
+			$content = $_POST['content'];
+			include "./connect_sql.php";
+			$query = "select max(comment) from $table_name";
+			$query = "update $table_name set title ='" .$title."',content = '".$content ."'where board_id =" .$id;
+			$result = mysql_query($query, $dbconn);			
+			?>
+    <script language = "javascript">
+        document.location.href = './board.php';
+    </script>
+    <?
+	}
+	?>
+</html>
